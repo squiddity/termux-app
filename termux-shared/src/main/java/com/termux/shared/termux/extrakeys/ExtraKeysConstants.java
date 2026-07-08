@@ -92,7 +92,6 @@ public class ExtraKeysConstants {
             put("DEL", "⌦"); // U+2326 ⌦ ERASE TO THE RIGHT not well known but easy to understand
             put("DRAWER", "☰"); // U+2630 ☰ TRIGRAM FOR HEAVEN not well known but easy to understand
             put("KEYBOARD", "⌨"); // U+2328 ⌨ KEYBOARD not well known but easy to understand
-            put("INPUT_MODE", "⌨+");
             put("PASTE", "⎘"); // U+2398
             put("SCROLL", "⇳"); // U+21F3
         }};
@@ -203,9 +202,6 @@ public class ExtraKeysConstants {
 
         put("DELETE", "DEL");
         put("BACKSPACE", "BKSP");
-
-        put("INPUTMODE", "INPUT_MODE");
-        put("INPUT-MODE", "INPUT_MODE");
 
         // easier for writing in termux.properties
         put("BACKSLASH", "\\");

@@ -545,21 +545,39 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Called when user requests the soft keyboard to be toggled via "KEYBOARD" toggle button in
      * drawer or extra keys, or with ctrl+alt+k hardware keyboard shortcut.
      */
-    public void toggleTerminalInputMode() {
-        if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode()))
-            mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_CURRENT;
-        else
-            mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD;
-
+    public void onKeyboardExtraKeyInputModeCycleRequest() {
         TerminalView terminalView = mActivity.getTerminalView();
-        if (terminalView != null) {
-            terminalView.requestFocus();
-            InputMethodManager inputMethodManager = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (inputMethodManager != null)
-                inputMethodManager.restartInput(terminalView);
+        boolean keyboardVisible = KeyboardUtils.isSoftKeyboardVisible(mActivity);
+
+        if (!keyboardVisible) {
+            mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_CURRENT;
+            KeyboardUtils.clearDisableSoftKeyboardFlags(mActivity);
+            restartTerminalInput(terminalView);
+            if (terminalView != null) KeyboardUtils.showSoftKeyboard(mActivity, terminalView);
+            Logger.showToast(mActivity, getTerminalInputModeLabel(), false);
+            return;
         }
 
+        if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode())) {
+            if (terminalView != null) KeyboardUtils.hideSoftKeyboard(mActivity, terminalView);
+            Logger.showToast(mActivity, mActivity.getString(R.string.msg_terminal_input_mode_hidden), false);
+            return;
+        }
+
+        mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD;
+        KeyboardUtils.clearDisableSoftKeyboardFlags(mActivity);
+        restartTerminalInput(terminalView);
+        if (terminalView != null) KeyboardUtils.showSoftKeyboard(mActivity, terminalView);
         Logger.showToast(mActivity, getTerminalInputModeLabel(), false);
+    }
+
+    private void restartTerminalInput(TerminalView terminalView) {
+        if (terminalView == null) return;
+
+        terminalView.requestFocus();
+        InputMethodManager inputMethodManager = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null)
+            inputMethodManager.restartInput(terminalView);
     }
 
     public String getTerminalInputModeLabel() {
