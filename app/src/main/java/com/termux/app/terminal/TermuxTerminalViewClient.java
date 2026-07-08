@@ -13,6 +13,7 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -43,6 +44,7 @@ import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
+import com.termux.view.TerminalView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,6 +72,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     private boolean mTerminalCursorBlinkerStateAlreadySet;
 
     private List<KeyboardShortcut> mSessionShortcuts;
+
+    private String mTerminalInputMode;
+    private String mTerminalDragMode;
 
     private static final String LOG_TAG = "TermuxTerminalViewClient";
 
@@ -138,6 +143,8 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      */
     public void onReloadProperties() {
         setSessionShortcuts();
+        mTerminalInputMode = mActivity.getProperties().getTerminalInputMode();
+        mTerminalDragMode = mActivity.getProperties().getTerminalDragMode();
     }
 
     /**
@@ -214,6 +221,16 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     @Override
     public boolean shouldEnforceCharBasedInput() {
         return mActivity.getProperties().isEnforcingCharBasedInput();
+    }
+
+    @Override
+    public String getTerminalInputMode() {
+        return mTerminalInputMode != null ? mTerminalInputMode : mActivity.getProperties().getTerminalInputMode();
+    }
+
+    @Override
+    public String getTerminalDragMode() {
+        return mTerminalDragMode != null ? mTerminalDragMode : mActivity.getProperties().getTerminalDragMode();
     }
 
     @Override
@@ -527,6 +544,50 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Called when user requests the soft keyboard to be toggled via "KEYBOARD" toggle button in
      * drawer or extra keys, or with ctrl+alt+k hardware keyboard shortcut.
      */
+    public void toggleTerminalInputMode() {
+        if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode()))
+            mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_CURRENT;
+        else
+            mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD;
+
+        TerminalView terminalView = mActivity.getTerminalView();
+        if (terminalView != null) {
+            terminalView.requestFocus();
+            InputMethodManager inputMethodManager = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (inputMethodManager != null)
+                inputMethodManager.restartInput(terminalView);
+        }
+
+        Logger.showToast(mActivity, getTerminalInputModeLabel(), false);
+    }
+
+    public void toggleTerminalDragMode() {
+        String dragMode = getTerminalDragMode();
+        if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_DEFAULT.equals(dragMode))
+            mTerminalDragMode = TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT;
+        else if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(dragMode))
+            mTerminalDragMode = TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP;
+        else
+            mTerminalDragMode = TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_DEFAULT;
+
+        Logger.showToast(mActivity, getTerminalDragModeLabel(), false);
+    }
+
+    public String getTerminalInputModeLabel() {
+        if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode()))
+            return mActivity.getString(R.string.msg_terminal_input_mode_direct_gboard);
+        return mActivity.getString(R.string.msg_terminal_input_mode_current);
+    }
+
+    public String getTerminalDragModeLabel() {
+        String dragMode = getTerminalDragMode();
+        if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(dragMode))
+            return mActivity.getString(R.string.msg_terminal_drag_mode_terminal_output);
+        if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP.equals(dragMode))
+            return mActivity.getString(R.string.msg_terminal_drag_mode_active_app);
+        return mActivity.getString(R.string.msg_terminal_drag_mode_default);
+    }
+
     public void onToggleSoftKeyboardRequest() {
         // If soft keyboard toggle behaviour is enable/disabled
         if (mActivity.getProperties().shouldEnableDisableSoftKeyboardOnToggle()) {
