@@ -180,7 +180,7 @@ public final class TerminalView extends View {
                     distanceY += mScrollRemainder;
                     int deltaRows = (int) (distanceY / mRenderer.mFontLineSpacing);
                     mScrollRemainder = distanceY - deltaRows * mRenderer.mFontLineSpacing;
-                    doScroll(e, deltaRows);
+                    doTouchScroll(e, deltaRows);
                 }
                 return true;
             }
@@ -199,9 +199,9 @@ public final class TerminalView extends View {
                 // Do not start scrolling until last fling has been taken care of:
                 if (!mScroller.isFinished()) return true;
 
-                final boolean mouseTrackingAtStartOfFling = mEmulator.isMouseTrackingActive();
+                final boolean appMouseTrackingAtStartOfFling = isTouchDragRoutedToActiveApp() && mEmulator.isMouseTrackingActive();
                 float SCALE = 0.25f;
-                if (mouseTrackingAtStartOfFling) {
+                if (appMouseTrackingAtStartOfFling) {
                     mScroller.fling(0, 0, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.mRows / 2, mEmulator.mRows / 2);
                 } else {
                     mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), 0);
@@ -212,15 +212,19 @@ public final class TerminalView extends View {
 
                     @Override
                     public void run() {
-                        if (mouseTrackingAtStartOfFling != mEmulator.isMouseTrackingActive()) {
+                        if (appMouseTrackingAtStartOfFling && !isTouchDragRoutedToActiveApp()) {
+                            mScroller.abortAnimation();
+                            return;
+                        }
+                        if (appMouseTrackingAtStartOfFling != (isTouchDragRoutedToActiveApp() && mEmulator.isMouseTrackingActive())) {
                             mScroller.abortAnimation();
                             return;
                         }
                         if (mScroller.isFinished()) return;
                         boolean more = mScroller.computeScrollOffset();
                         int newY = mScroller.getCurrY();
-                        int diff = mouseTrackingAtStartOfFling ? (newY - mLastY) : (newY - mTopRow);
-                        doScroll(e2, diff);
+                        int diff = appMouseTrackingAtStartOfFling ? (newY - mLastY) : (newY - mTopRow);
+                        doTouchScroll(e2, diff);
                         mLastY = newY;
                         if (more) post(this);
                     }
@@ -303,6 +307,35 @@ public final class TerminalView extends View {
         return true;
     }
 
+    static int getTerminalSelectedInputType(String terminalInputMode, boolean enforceCharBasedInput) {
+        if (TerminalViewClient.TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(terminalInputMode)) {
+            // Text-like profile for the experimental Gboard-first path. Do not set TYPE_NULL,
+            // TYPE_TEXT_FLAG_NO_SUGGESTIONS, or a password variation, since those suppress the
+            // suggestions/swipe behavior this mode is intended to validate.
+            return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+        }
+
+        if (enforceCharBasedInput) {
+            // Some keyboards seems do not reset the internal state on TYPE_NULL.
+            // Affects mostly Samsung stock keyboards.
+            // https://github.com/termux/termux-app/issues/686
+            // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
+            // not set and it logs a warning:
+            // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
+            // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
+            return InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        }
+
+        // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
+        //
+        // Previous keyboard issues:
+        // https://github.com/termux/termux-packages/issues/25
+        // https://github.com/termux/termux-app/issues/87.
+        // https://github.com/termux/termux-app/issues/126.
+        // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
+        return InputType.TYPE_NULL;
+    }
+
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         // Ensure that inputType is only set if TerminalView is selected view with the keyboard and
@@ -310,25 +343,7 @@ public final class TerminalView extends View {
         // initially started with the alternate view or if activity is returned to from another app
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
-            if (mClient.shouldEnforceCharBasedInput()) {
-                // Some keyboards seems do not reset the internal state on TYPE_NULL.
-                // Affects mostly Samsung stock keyboards.
-                // https://github.com/termux/termux-app/issues/686
-                // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
-                // not set and it logs a warning:
-                // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
-                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
-                outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-            } else {
-                // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
-                //
-                // Previous keyboard issues:
-                // https://github.com/termux/termux-packages/issues/25
-                // https://github.com/termux/termux-app/issues/87.
-                // https://github.com/termux/termux-app/issues/126.
-                // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
-                outAttrs.inputType = InputType.TYPE_NULL;
-            }
+            outAttrs.inputType = getTerminalSelectedInputType(mClient.getTerminalInputMode(), mClient.shouldEnforceCharBasedInput());
         } else {
             // Corresponds to android:inputType="text"
             outAttrs.inputType =  InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL;
@@ -344,6 +359,12 @@ public final class TerminalView extends View {
             public boolean finishComposingText() {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
                 super.finishComposingText();
+
+                // In direct Gboard mode, composing text is an IME-side preview of the word or
+                // correction being built. Wait for commitText() to send the finalized text so a
+                // swipe suggestion is not sent once on finish and again on commit.
+                if (TerminalViewClient.TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(mClient.getTerminalInputMode()))
+                    return true;
 
                 sendTextToTerminal(getEditable());
                 getEditable().clear();
@@ -570,7 +591,43 @@ public final class TerminalView extends View {
         mEmulator.sendMouseEvent(button, x, y, pressed);
     }
 
-    /** Perform a scroll, either from dragging the screen or by scrolling a mouse wheel. */
+    static boolean isTerminalOutputDragMode(String terminalDragMode) {
+        return TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(terminalDragMode);
+    }
+
+    static boolean isActiveAppDragMode(String terminalDragMode) {
+        return TerminalViewClient.TERMINAL_DRAG_MODE_ACTIVE_APP.equals(terminalDragMode);
+    }
+
+    boolean isTouchDragRoutedToTerminalOutput() {
+        return isTerminalOutputDragMode(mClient.getTerminalDragMode());
+    }
+
+    boolean isTouchDragRoutedToActiveApp() {
+        return isActiveAppDragMode(mClient.getTerminalDragMode());
+    }
+
+    void scrollTranscriptRows(boolean up) {
+        mTopRow = Math.min(0, Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1)));
+        if (!awakenScrollBars()) invalidate();
+    }
+
+    /** Perform a touch drag or fling scroll using the configured touch drag target. */
+    void doTouchScroll(MotionEvent event, int rowsDown) {
+        if (isTouchDragRoutedToTerminalOutput()) {
+            boolean up = rowsDown < 0;
+            int amount = Math.abs(rowsDown);
+            for (int i = 0; i < amount; i++) scrollTranscriptRows(up);
+            return;
+        }
+
+        // Default and active-app modes both use the existing app-aware routing. Active-app mode
+        // intentionally preserves mouse-tracking and alternate-buffer app behavior while the
+        // terminal-output mode above bypasses those app-control paths for transcript review.
+        doScroll(event, rowsDown);
+    }
+
+    /** Perform the existing app-aware scroll route, used by physical mouse wheels and default/active-app touch modes. */
     void doScroll(MotionEvent event, int rowsDown) {
         boolean up = rowsDown < 0;
         int amount = Math.abs(rowsDown);
@@ -582,8 +639,7 @@ public final class TerminalView extends View {
                 // e.g. less, which shifts to the alt screen without mouse handling.
                 handleKeyCode(up ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN, 0);
             } else {
-                mTopRow = Math.min(0, Math.max(-(mEmulator.getScreen().getActiveTranscriptRows()), mTopRow + (up ? -1 : 1)));
-                if (!awakenScrollBars()) invalidate();
+                scrollTranscriptRows(up);
             }
         }
     }

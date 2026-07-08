@@ -29,6 +29,16 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
         return false;
     }
 
+    @Override
+    public String getTerminalInputMode() {
+        return TerminalViewClient.TERMINAL_INPUT_MODE_CURRENT;
+    }
+
+    @Override
+    public String getTerminalDragMode() {
+        return TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT;
+    }
+
     public boolean shouldUseCtrlSpaceWorkaround() {
         return false;
     }
