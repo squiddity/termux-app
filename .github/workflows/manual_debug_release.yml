@@ -1,0 +1,133 @@
+name: Manual Debug APK Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "GitHub release tag to create or update, for example v0.118.3+agent-ui"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark the GitHub release as a prerelease"
+        required: true
+        default: true
+        type: boolean
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-apks:
+    name: Build ${{ matrix.package_variant }} debug APKs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package_variant: [ apt-android-7, apt-android-5 ]
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v6
+
+      - name: Setup java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Build debug APKs
+        shell: bash
+        env:
+          PACKAGE_VARIANT: ${{ matrix.package_variant }}
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            RELEASE_VERSION_NAME="${INPUT_TAG_NAME}"
+          else
+            RELEASE_VERSION_NAME="${GITHUB_REF_NAME}"
+          fi
+
+          if ! printf "%s" "${RELEASE_VERSION_NAME#v}" | grep -qP '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'; then
+            echo "Release tag '${RELEASE_VERSION_NAME}' must be a semantic version, optionally prefixed with v." >&2
+            exit 1
+          fi
+
+          APK_DIR_PATH="./app/build/outputs/apk/debug"
+          APK_VERSION_TAG="${RELEASE_VERSION_NAME}+${PACKAGE_VARIANT}-github-debug"
+          APK_BASENAME_PREFIX="termux-app_${APK_VERSION_TAG}"
+
+          export TERMUX_APK_VERSION_TAG="${APK_VERSION_TAG}"
+          export TERMUX_PACKAGE_VARIANT="${PACKAGE_VARIANT}"
+          ./gradlew assembleDebug
+
+          for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
+            test -f "${APK_DIR_PATH}/${APK_BASENAME_PREFIX}_${abi}.apk"
+          done
+
+          (cd "${APK_DIR_PATH}" && sha256sum \
+            "${APK_BASENAME_PREFIX}_universal.apk" \
+            "${APK_BASENAME_PREFIX}_arm64-v8a.apk" \
+            "${APK_BASENAME_PREFIX}_armeabi-v7a.apk" \
+            "${APK_BASENAME_PREFIX}_x86_64.apk" \
+            "${APK_BASENAME_PREFIX}_x86.apk" \
+            > "${APK_BASENAME_PREFIX}_sha256sums")
+
+          mkdir -p release-assets
+          cp "${APK_DIR_PATH}/${APK_BASENAME_PREFIX}_"*.apk release-assets/
+          cp "${APK_DIR_PATH}/${APK_BASENAME_PREFIX}_sha256sums" release-assets/
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: debug-apks-${{ matrix.package_variant }}
+          path: release-assets/*
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    needs: build-apks
+
+    steps:
+      - name: Download built APK artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create or update GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+          INPUT_PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            RELEASE_VERSION_NAME="${INPUT_TAG_NAME}"
+            PRERELEASE_FLAG=""
+            if [ "${INPUT_PRERELEASE}" = "true" ]; then
+              PRERELEASE_FLAG="--prerelease"
+            fi
+          else
+            RELEASE_VERSION_NAME="${GITHUB_REF_NAME}"
+            PRERELEASE_FLAG=""
+          fi
+
+          NOTES="Debug APKs built by GitHub Actions from ${GITHUB_SHA}. These are signed with the repository debug/test key and are intended for testing."
+
+          if gh release view "${RELEASE_VERSION_NAME}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_VERSION_NAME}" release-assets/* --clobber
+          else
+            gh release create "${RELEASE_VERSION_NAME}" release-assets/* \
+              --target "${GITHUB_SHA}" \
+              --title "${RELEASE_VERSION_NAME}" \
+              --notes "${NOTES}" \
+              ${PRERELEASE_FLAG}
+          fi
