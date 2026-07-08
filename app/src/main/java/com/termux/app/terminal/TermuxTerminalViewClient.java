@@ -545,7 +545,7 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Called when user requests the soft keyboard to be toggled via "KEYBOARD" toggle button in
      * drawer or extra keys, or with ctrl+alt+k hardware keyboard shortcut.
      */
-    public void onKeyboardExtraKeyInputModeCycleRequest() {
+    public void onCycleSoftKeyboardModeRequest() {
         TerminalView terminalView = mActivity.getTerminalView();
         boolean keyboardVisible = KeyboardUtils.isSoftKeyboardVisible(mActivity);
 
