@@ -21,11 +21,11 @@ Termux can opt into experimental terminal interaction modes from `termux.propert
 # Defaults preserve current behavior.
 terminal-input-mode = current
 
-# Optional extra-key action for fast input-mode switching.
-extra-keys = [['ESC','TAB','CTRL','ALT','INPUT_MODE','KEYBOARD']]
+# Existing KEYBOARD extra key cycles hidden/current/direct input states.
+extra-keys = [['ESC','TAB','CTRL','ALT','KEYBOARD']]
 ```
 
-`terminal-input-mode = direct-gboard` enables a Gboard-first direct terminal input profile intended to allow suggestions, autocomplete, and swipe typing in the live terminal. It is experimental and not a broad compatibility claim for every keyboard. Use the `INPUT_MODE` extra key to switch back to the current terminal-safe input mode without restarting Termux.
+`terminal-input-mode = direct-gboard` enables a Gboard-first direct terminal input profile intended to allow suggestions, autocomplete, and swipe typing in the live terminal. It is experimental and not a broad compatibility claim for every keyboard. Use the existing `KEYBOARD` extra key to cycle between hidden keyboard, current terminal-safe input, and direct Gboard input without restarting Termux.
 
 The **Drag Reviews Terminal Output** setting keeps explicit mouse-tracking app scrolling intact, but replaces Termux's fallback drag-as-arrow-keys behavior with transcript scrollback movement for shell and agent sessions. Alternate-screen apps may not expose saved scrollback; turn the setting off to restore default drag behavior when needed.
 

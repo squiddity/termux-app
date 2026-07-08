@@ -78,6 +78,7 @@
 
     <string name="action_reset_terminal">Reset</string>
     <string name="msg_terminal_reset">Terminal reset</string>
+    <string name="msg_terminal_input_mode_hidden">Terminal input: keyboard hidden</string>
     <string name="msg_terminal_input_mode_current">Terminal input: current-safe</string>
     <string name="msg_terminal_input_mode_direct_gboard">Terminal input: direct Gboard (experimental)</string>
 

@@ -86,7 +86,7 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
     public void onTerminalExtraKeyButtonClick(View view, String key, boolean ctrlDown, boolean altDown, boolean shiftDown, boolean fnDown) {
         if ("KEYBOARD".equals(key)) {
             if(mTermuxTerminalViewClient != null)
-                mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
+                mTermuxTerminalViewClient.onKeyboardExtraKeyInputModeCycleRequest();
         } else if ("DRAWER".equals(key)) {
             DrawerLayout drawerLayout = mTermuxTerminalViewClient.getActivity().getDrawer();
             if (drawerLayout.isDrawerOpen(Gravity.LEFT))
@@ -100,9 +100,6 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
             TerminalView terminalView = mTermuxTerminalViewClient.getActivity().getTerminalView();
             if (terminalView != null && terminalView.mEmulator != null)
                 terminalView.mEmulator.toggleAutoScrollDisabled();
-        } else if ("INPUT_MODE".equals(key)) {
-            if (mTermuxTerminalViewClient != null)
-                mTermuxTerminalViewClient.toggleTerminalInputMode();
         } else {
             super.onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, fnDown);
         }
