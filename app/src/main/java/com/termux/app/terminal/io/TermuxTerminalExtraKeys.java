@@ -103,9 +103,6 @@ public class TermuxTerminalExtraKeys extends TerminalExtraKeys {
         } else if ("INPUT_MODE".equals(key)) {
             if (mTermuxTerminalViewClient != null)
                 mTermuxTerminalViewClient.toggleTerminalInputMode();
-        } else if ("DRAG_MODE".equals(key)) {
-            if (mTermuxTerminalViewClient != null)
-                mTermuxTerminalViewClient.toggleTerminalDragMode();
         } else {
             super.onTerminalExtraKeyButtonClick(view, key, ctrlDown, altDown, shiftDown, fnDown);
         }

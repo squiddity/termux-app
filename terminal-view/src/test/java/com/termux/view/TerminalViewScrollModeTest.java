@@ -11,13 +11,12 @@ public class TerminalViewScrollModeTest {
     public void terminalOutputModeRoutesTouchDragToTerminalOutput() {
         assertTrue(TerminalView.isTerminalOutputDragMode(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT));
         assertFalse(TerminalView.isTerminalOutputDragMode(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT));
-        assertFalse(TerminalView.isTerminalOutputDragMode(TerminalViewClient.TERMINAL_DRAG_MODE_ACTIVE_APP));
     }
 
     @Test
-    public void activeAppModeRoutesTouchDragToActiveApp() {
-        assertTrue(TerminalView.isActiveAppDragMode(TerminalViewClient.TERMINAL_DRAG_MODE_ACTIVE_APP));
-        assertFalse(TerminalView.isActiveAppDragMode(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT));
-        assertFalse(TerminalView.isActiveAppDragMode(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT));
+    public void terminalOutputModeOnlyReplacesFallbackDragBehavior() {
+        assertTrue(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT, false));
+        assertFalse(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT, true));
+        assertFalse(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT, false));
     }
 }

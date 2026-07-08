@@ -24,21 +24,4 @@ public class TermuxSharedPropertiesTest {
             TermuxSharedProperties.getTerminalInputModeInternalPropertyValueFromValue("direct-gboard"));
     }
 
-    @Test
-    public void terminalDragModeDefaultsToDefaultForMissingOrInvalidValues() {
-        assertEquals(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT,
-            TermuxSharedProperties.getTerminalDragModeInternalPropertyValueFromValue(null));
-        assertEquals(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT,
-            TermuxSharedProperties.getTerminalDragModeInternalPropertyValueFromValue("invalid"));
-    }
-
-    @Test
-    public void terminalDragModeMapsValidLiteralValues() {
-        assertEquals(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT,
-            TermuxSharedProperties.getTerminalDragModeInternalPropertyValueFromValue("default"));
-        assertEquals(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT,
-            TermuxSharedProperties.getTerminalDragModeInternalPropertyValueFromValue("terminal-output"));
-        assertEquals(TerminalViewClient.TERMINAL_DRAG_MODE_ACTIVE_APP,
-            TermuxSharedProperties.getTerminalDragModeInternalPropertyValueFromValue("active-app"));
-    }
 }

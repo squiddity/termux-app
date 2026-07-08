@@ -199,9 +199,9 @@ public final class TerminalView extends View {
                 // Do not start scrolling until last fling has been taken care of:
                 if (!mScroller.isFinished()) return true;
 
-                final boolean appMouseTrackingAtStartOfFling = isTouchDragRoutedToActiveApp() && mEmulator.isMouseTrackingActive();
+                final boolean mouseTrackingAtStartOfFling = mEmulator.isMouseTrackingActive();
                 float SCALE = 0.25f;
-                if (appMouseTrackingAtStartOfFling) {
+                if (mouseTrackingAtStartOfFling) {
                     mScroller.fling(0, 0, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.mRows / 2, mEmulator.mRows / 2);
                 } else {
                     mScroller.fling(0, mTopRow, 0, -(int) (velocityY * SCALE), 0, 0, -mEmulator.getScreen().getActiveTranscriptRows(), 0);
@@ -212,18 +212,14 @@ public final class TerminalView extends View {
 
                     @Override
                     public void run() {
-                        if (appMouseTrackingAtStartOfFling && !isTouchDragRoutedToActiveApp()) {
-                            mScroller.abortAnimation();
-                            return;
-                        }
-                        if (appMouseTrackingAtStartOfFling != (isTouchDragRoutedToActiveApp() && mEmulator.isMouseTrackingActive())) {
+                        if (mouseTrackingAtStartOfFling != mEmulator.isMouseTrackingActive()) {
                             mScroller.abortAnimation();
                             return;
                         }
                         if (mScroller.isFinished()) return;
                         boolean more = mScroller.computeScrollOffset();
                         int newY = mScroller.getCurrY();
-                        int diff = appMouseTrackingAtStartOfFling ? (newY - mLastY) : (newY - mTopRow);
+                        int diff = mouseTrackingAtStartOfFling ? (newY - mLastY) : (newY - mTopRow);
                         doTouchScroll(e2, diff);
                         mLastY = newY;
                         if (more) post(this);
@@ -595,16 +591,12 @@ public final class TerminalView extends View {
         return TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(terminalDragMode);
     }
 
-    static boolean isActiveAppDragMode(String terminalDragMode) {
-        return TerminalViewClient.TERMINAL_DRAG_MODE_ACTIVE_APP.equals(terminalDragMode);
+    static boolean shouldUseTranscriptForTouchDrag(String terminalDragMode, boolean mouseTrackingActive) {
+        return isTerminalOutputDragMode(terminalDragMode) && !mouseTrackingActive;
     }
 
     boolean isTouchDragRoutedToTerminalOutput() {
         return isTerminalOutputDragMode(mClient.getTerminalDragMode());
-    }
-
-    boolean isTouchDragRoutedToActiveApp() {
-        return isActiveAppDragMode(mClient.getTerminalDragMode());
     }
 
     void scrollTranscriptRows(boolean up) {
@@ -615,19 +607,26 @@ public final class TerminalView extends View {
     /** Perform a touch drag or fling scroll using the configured touch drag target. */
     void doTouchScroll(MotionEvent event, int rowsDown) {
         if (isTouchDragRoutedToTerminalOutput()) {
-            boolean up = rowsDown < 0;
-            int amount = Math.abs(rowsDown);
-            for (int i = 0; i < amount; i++) scrollTranscriptRows(up);
+            // Do not interfere with terminal apps that explicitly request mouse tracking (for
+            // example `less` with mouse support). Only replace Termux's fallback DPAD/app-key path
+            // with transcript movement so drag review does not cycle shell/Pi command history.
+            if (shouldUseTranscriptForTouchDrag(mClient.getTerminalDragMode(), mEmulator.isMouseTrackingActive()))
+                scrollTranscriptRows(rowsDown);
+            else
+                doScroll(event, rowsDown);
             return;
         }
 
-        // Default and active-app modes both use the existing app-aware routing. Active-app mode
-        // intentionally preserves mouse-tracking and alternate-buffer app behavior while the
-        // terminal-output mode above bypasses those app-control paths for transcript review.
         doScroll(event, rowsDown);
     }
 
-    /** Perform the existing app-aware scroll route, used by physical mouse wheels and default/active-app touch modes. */
+    void scrollTranscriptRows(int rowsDown) {
+        boolean up = rowsDown < 0;
+        int amount = Math.abs(rowsDown);
+        for (int i = 0; i < amount; i++) scrollTranscriptRows(up);
+    }
+
+    /** Perform the existing app-aware scroll route, used by physical mouse wheels and default touch drags. */
     void doScroll(MotionEvent event, int rowsDown) {
         boolean up = rowsDown < 0;
         int amount = Math.abs(rowsDown);

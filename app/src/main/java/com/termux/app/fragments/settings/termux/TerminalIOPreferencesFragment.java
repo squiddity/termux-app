@@ -60,6 +60,9 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
             case "soft_keyboard_enabled_only_if_no_hardware":
                 mPreferences.setSoftKeyboardEnabledOnlyIfNoHardware(value);
                 break;
+            case "terminal_output_touch_drag":
+                mPreferences.setTerminalOutputTouchDrag(value);
+                break;
             default:
                 break;
         }
@@ -74,6 +77,8 @@ class TerminalIOPreferencesDataStore extends PreferenceDataStore {
                 return mPreferences.isSoftKeyboardEnabled();
             case "soft_keyboard_enabled_only_if_no_hardware":
                 return mPreferences.isSoftKeyboardEnabledOnlyIfNoHardware();
+            case "terminal_output_touch_drag":
+                return mPreferences.shouldUseTerminalOutputTouchDrag();
             default:
                 return false;
         }

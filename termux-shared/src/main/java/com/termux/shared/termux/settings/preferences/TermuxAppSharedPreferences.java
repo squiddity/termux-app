@@ -112,6 +112,16 @@ public class TermuxAppSharedPreferences extends AppSharedPreferences {
 
 
 
+    public boolean shouldUseTerminalOutputTouchDrag() {
+        return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_OUTPUT_TOUCH_DRAG, TERMUX_APP.DEFAULT_VALUE_TERMINAL_OUTPUT_TOUCH_DRAG);
+    }
+
+    public void setTerminalOutputTouchDrag(boolean value) {
+        SharedPreferenceUtils.setBoolean(mSharedPreferences, TERMUX_APP.KEY_TERMINAL_OUTPUT_TOUCH_DRAG, value, false);
+    }
+
+
+
     public boolean shouldKeepScreenOn() {
         return SharedPreferenceUtils.getBoolean(mSharedPreferences, TERMUX_APP.KEY_KEEP_SCREEN_ON, TERMUX_APP.DEFAULT_VALUE_KEEP_SCREEN_ON);
     }
