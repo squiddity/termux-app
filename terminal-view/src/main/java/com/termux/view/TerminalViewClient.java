@@ -21,7 +21,6 @@ public interface TerminalViewClient {
 
     String TERMINAL_DRAG_MODE_DEFAULT = "default";
     String TERMINAL_DRAG_MODE_TERMINAL_OUTPUT = "terminal-output";
-    String TERMINAL_DRAG_MODE_ACTIVE_APP = "active-app";
 
     /**
      * Callback function on scale events according to {@link ScaleGestureDetector#getScaleFactor()}.

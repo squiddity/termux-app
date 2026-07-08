@@ -45,6 +45,7 @@ import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalView;
+import com.termux.view.TerminalViewClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +75,6 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     private List<KeyboardShortcut> mSessionShortcuts;
 
     private String mTerminalInputMode;
-    private String mTerminalDragMode;
 
     private static final String LOG_TAG = "TermuxTerminalViewClient";
 
@@ -144,7 +144,6 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     public void onReloadProperties() {
         setSessionShortcuts();
         mTerminalInputMode = mActivity.getProperties().getTerminalInputMode();
-        mTerminalDragMode = mActivity.getProperties().getTerminalDragMode();
     }
 
     /**
@@ -230,7 +229,9 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
 
     @Override
     public String getTerminalDragMode() {
-        return mTerminalDragMode != null ? mTerminalDragMode : mActivity.getProperties().getTerminalDragMode();
+        return mActivity.getPreferences().shouldUseTerminalOutputTouchDrag()
+            ? TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT
+            : TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT;
     }
 
     @Override
@@ -561,31 +562,10 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
         Logger.showToast(mActivity, getTerminalInputModeLabel(), false);
     }
 
-    public void toggleTerminalDragMode() {
-        String dragMode = getTerminalDragMode();
-        if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_DEFAULT.equals(dragMode))
-            mTerminalDragMode = TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT;
-        else if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(dragMode))
-            mTerminalDragMode = TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP;
-        else
-            mTerminalDragMode = TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_DEFAULT;
-
-        Logger.showToast(mActivity, getTerminalDragModeLabel(), false);
-    }
-
     public String getTerminalInputModeLabel() {
         if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode()))
             return mActivity.getString(R.string.msg_terminal_input_mode_direct_gboard);
         return mActivity.getString(R.string.msg_terminal_input_mode_current);
-    }
-
-    public String getTerminalDragModeLabel() {
-        String dragMode = getTerminalDragMode();
-        if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(dragMode))
-            return mActivity.getString(R.string.msg_terminal_drag_mode_terminal_output);
-        if (TermuxPropertyConstants.IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP.equals(dragMode))
-            return mActivity.getString(R.string.msg_terminal_drag_mode_active_app);
-        return mActivity.getString(R.string.msg_terminal_drag_mode_default);
     }
 
     public void onToggleSoftKeyboardRequest() {

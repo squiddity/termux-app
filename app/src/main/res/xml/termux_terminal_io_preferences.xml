@@ -16,6 +16,12 @@
             app:summaryOn="@string/termux_soft_keyboard_enabled_only_if_no_hardware_on"
             app:title="@string/termux_soft_keyboard_enabled_only_if_no_hardware_title" />
 
+        <SwitchPreferenceCompat
+            app:key="terminal_output_touch_drag"
+            app:summaryOff="@string/termux_terminal_output_touch_drag_off"
+            app:summaryOn="@string/termux_terminal_output_touch_drag_on"
+            app:title="@string/termux_terminal_output_touch_drag_title" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

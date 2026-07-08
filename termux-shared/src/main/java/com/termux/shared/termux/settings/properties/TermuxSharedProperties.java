@@ -298,8 +298,6 @@ public abstract class TermuxSharedProperties {
                 return (String) getNightModeInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_TERMINAL_INPUT_MODE:
                 return (String) getTerminalInputModeInternalPropertyValueFromValue(value);
-            case TermuxPropertyConstants.KEY_TERMINAL_DRAG_MODE:
-                return (String) getTerminalDragModeInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR:
                 return (String) getSoftKeyboardToggleBehaviourInternalPropertyValueFromValue(value);
             case TermuxPropertyConstants.KEY_VOLUME_KEYS_BEHAVIOUR:
@@ -565,16 +563,6 @@ public abstract class TermuxSharedProperties {
     }
 
     /**
-     * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_TERMINAL_DRAG_MODE}.
-     *
-     * @param value {@link String} value to convert.
-     * @return Returns the internal value for value.
-     */
-    public static String getTerminalDragModeInternalPropertyValueFromValue(String value) {
-        return (String) SharedProperties.getDefaultIfNotInMap(TermuxPropertyConstants.KEY_TERMINAL_DRAG_MODE, TermuxPropertyConstants.MAP_TERMINAL_DRAG_MODE, SharedProperties.toLowerCase(value), TermuxPropertyConstants.DEFAULT_IVALUE_TERMINAL_DRAG_MODE, true, LOG_TAG);
-    }
-
-    /**
      * Returns the value itself if it is not {@code null}, otherwise returns {@link TermuxPropertyConstants#DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR}.
      *
      * @param value {@link String} value to convert.
@@ -696,10 +684,6 @@ public abstract class TermuxSharedProperties {
 
     public String getTerminalInputMode() {
         return (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_INPUT_MODE, true);
-    }
-
-    public String getTerminalDragMode() {
-        return (String) getInternalPropertyValue(TermuxPropertyConstants.KEY_TERMINAL_DRAG_MODE, true);
     }
 
     /** Get the {@link TermuxPropertyConstants#KEY_NIGHT_MODE} value from the properties file on disk. */

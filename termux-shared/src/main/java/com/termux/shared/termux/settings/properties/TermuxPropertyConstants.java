@@ -83,7 +83,7 @@ import java.util.Set;
  *      - Add `KEY_DISABLE_FILE_SHARE_RECEIVER` and `KEY_DISABLE_FILE_VIEW_RECEIVER`.
  *
  * - 0.19.0 (2026-07-08)
- *      - Add `KEY_TERMINAL_INPUT_MODE` and `KEY_TERMINAL_DRAG_MODE`.
+ *      - Add `KEY_TERMINAL_INPUT_MODE`.
  */
 
 /**
@@ -372,24 +372,6 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Defines the key for terminal touch drag target mode selection. */
-    public static final String KEY_TERMINAL_DRAG_MODE =  "terminal-drag-mode"; // Default: "terminal-drag-mode"
-
-    public static final String IVALUE_TERMINAL_DRAG_MODE_DEFAULT = TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT;
-    public static final String IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT = TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT;
-    public static final String IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP = TerminalViewClient.TERMINAL_DRAG_MODE_ACTIVE_APP;
-    public static final String DEFAULT_IVALUE_TERMINAL_DRAG_MODE = IVALUE_TERMINAL_DRAG_MODE_DEFAULT;
-
-    /** Defines the bidirectional map for terminal touch drag target mode values and their internal values */
-    public static final ImmutableBiMap<String, String> MAP_TERMINAL_DRAG_MODE =
-        new ImmutableBiMap.Builder<String, String>()
-            .put(IVALUE_TERMINAL_DRAG_MODE_DEFAULT, IVALUE_TERMINAL_DRAG_MODE_DEFAULT)
-            .put(IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT, IVALUE_TERMINAL_DRAG_MODE_TERMINAL_OUTPUT)
-            .put(IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP, IVALUE_TERMINAL_DRAG_MODE_ACTIVE_APP)
-            .build();
-
-
-
     /** Defines the key for whether toggle soft keyboard request will show/hide or enable/disable keyboard */
     public static final String KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
 
@@ -468,7 +450,6 @@ public final class TermuxPropertyConstants {
         KEY_EXTRA_KEYS_STYLE,
         KEY_NIGHT_MODE,
         KEY_TERMINAL_INPUT_MODE,
-        KEY_TERMINAL_DRAG_MODE,
         KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR,
         KEY_VOLUME_KEYS_BEHAVIOUR
     ));

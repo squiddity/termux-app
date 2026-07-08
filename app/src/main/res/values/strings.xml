@@ -88,9 +88,6 @@
     <string name="msg_terminal_reset">Terminal reset</string>
     <string name="msg_terminal_input_mode_current">Terminal input: current-safe</string>
     <string name="msg_terminal_input_mode_direct_gboard">Terminal input: direct Gboard (experimental)</string>
-    <string name="msg_terminal_drag_mode_default">Drag target: default</string>
-    <string name="msg_terminal_drag_mode_terminal_output">Drag target: terminal output</string>
-    <string name="msg_terminal_drag_mode_active_app">Drag target: active app</string>
 
     <string name="action_kill_process">Kill process (%d)</string>
     <string name="title_confirm_kill_process">Really kill this session?</string>
@@ -200,6 +197,11 @@
                     hardware keyboard is connected. (Default)</string>
                 <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">Soft keyboard will be enabled only if
                     no hardware keyboard is connected.</string>
+
+                <!-- Terminal Output Touch Drag -->
+                <string name="termux_terminal_output_touch_drag_title">Drag Reviews Terminal Output</string>
+                <string name="termux_terminal_output_touch_drag_off">Touch drag will use default terminal app behavior. (Default)</string>
+                <string name="termux_terminal_output_touch_drag_on">Touch drag will review terminal scrollback when mouse tracking is not active.</string>
 
 
         <!-- Terminal View Preferences -->
