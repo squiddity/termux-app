@@ -15,7 +15,7 @@ Quick how-to about Termux package management is available at [Package Management
 
 ## Experimental agent-friendly terminal controls
 
-The **Drag Reviews Terminal Output** setting replaces Termux's fallback touch-drag-as-app-input behavior with transcript scrollback movement for shell and agent sessions. Turn the setting off to restore default drag behavior when needed.
+The **Drag Reviews Terminal Output** setting changes Termux's fallback touch-drag behavior from app-level up/down arrows to page up/down keys, avoiding accidental command-history movement in shell and agent sessions. Turn the setting off to restore default drag behavior when needed.
 
 **We are looking for Termux Android application maintainers.**
 

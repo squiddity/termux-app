@@ -199,7 +199,7 @@
                 <!-- Terminal Output Touch Drag -->
                 <string name="termux_terminal_output_touch_drag_title">Drag Reviews Terminal Output</string>
                 <string name="termux_terminal_output_touch_drag_off">Touch drag will use default terminal app behavior. (Default)</string>
-                <string name="termux_terminal_output_touch_drag_on">Touch drag will review terminal scrollback instead of sending app-level scroll input.</string>
+                <string name="termux_terminal_output_touch_drag_on">Touch drag fallback will send page keys instead of up/down arrows.</string>
 
 
         <!-- Terminal View Preferences -->

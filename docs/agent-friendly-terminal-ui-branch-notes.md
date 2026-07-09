@@ -22,8 +22,8 @@ This branch experiments with making Termux friendlier for agent/Pi usage on phon
 1. **Terminal output drag setting**
    - New Settings toggle: **Settings → Terminal I/O → Keyboard → Drag Reviews Terminal Output**.
    - When disabled, touch drag uses upstream/default behavior.
-   - When enabled, touch drag is intentionally not app-aware: it routes finger drag to Termux transcript scrollback instead of sending DPAD/app-style up/down input or mouse-wheel events that can cycle shell/Pi command history.
-   - This currently prioritizes shell/Pi output review over `less` drag compatibility; `less` and other full-screen apps can be revisited after validating the Pi behavior.
+   - When enabled, touch drag keeps upstream behavior except for the fallback path that maps drag to DPAD/app-style up/down input.
+   - In that fallback path, this branch sends `PGUP` / `PGDN` instead, matching the extra keys that move scroll position in Pi and avoiding command-history cycling from arrow keys.
 
 2. **Default extra keys on beta base**
    - Upstream `v0.119.0-beta.3` changed the default extra keys to include `{key: 'DRAWER', popup: 'PASTE'}` and `SCROLL`.
@@ -60,7 +60,7 @@ This branch experiments with making Termux friendlier for agent/Pi usage on phon
 
 - `terminal-view/src/main/java/com/termux/view/TerminalView.java`
   - Touch drag/fling now routes through `doTouchScroll()`.
-  - `terminal-output` mode uses transcript scroll for finger drag instead of app-aware DPAD/mouse-wheel behavior.
+  - `terminal-output` mode keeps the normal app-aware route but maps the alternate-buffer fallback from DPAD up/down to page up/down.
   - Existing `doScroll()` remains the default app-aware route for physical mouse wheel and normal/upstream behavior when the setting is disabled.
 
 ## Tests added
@@ -73,17 +73,17 @@ This branch experiments with making Termux friendlier for agent/Pi usage on phon
 - The custom keyboard/input-mode work was removed from this branch after finding a keyboard that works well enough with upstream Termux behavior; this branch now focuses only on drag behavior.
 - Termux upstream already supports drag scrolling in apps such as `less`, including fallback paths that send DPAD/app-style up/down events when mouse tracking is not active.
 - That fallback explains why shell/Pi sessions can cycle command history on drag: they receive up/down-style input instead of scrollback review.
-- The current experiment for **Drag Reviews Terminal Output** intentionally disables touch-drag app-awareness and routes touch drag to Termux transcript scrollback so it never sends DPAD up/down or mouse-wheel events from finger drag. This prioritizes shell/Pi review behavior over `less` drag compatibility for now.
-- `PGUP` / `PGDN` extra keys still send page keys through the normal terminal key path and were observed to move scroll position in Pi; they may remain the app-level fallback while drag behavior is tuned.
+- `PGUP` / `PGDN` extra keys send page keys through the normal terminal key path and were observed to move scroll position in Pi.
+- The current experiment for **Drag Reviews Terminal Output** changes only the arrow-key fallback to use page keys instead of DPAD up/down; main-buffer transcript scrolling and mouse-tracking behavior stay upstream.
 - A side-by-side package rename is not viable without a matching bootstrap built for the new package/data prefix.
 - The beta branch's default extra keys differ from master; keep beta defaults unless explicitly changing them.
 
 ## Known caveats / next steps
 
 - Manual device validation is still needed for:
-  - The updated **Drag Reviews Terminal Output** behavior after disabling touch-drag app-awareness:
+  - The updated **Drag Reviews Terminal Output** behavior after mapping fallback drag to page keys:
     - shell/Pi drag should review output rather than cycle command history;
-    - `less` drag is expected to regress for now and should be revisited later;
+    - `less` drag should still move, now via page keys in the fallback path;
     - `PGUP` / `PGDN` extra keys should continue to work as an app-level scroll fallback in Pi.
   - Fresh install and upgrade behavior for the new `terminal_output_touch_drag` preference default.
   - Installing and launching debug release assets from the manual GitHub release workflow on target devices.

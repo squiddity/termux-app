@@ -14,8 +14,8 @@ public class TerminalViewScrollModeTest {
     }
 
     @Test
-    public void terminalOutputModeAlwaysReplacesTouchDragWithTranscriptScroll() {
-        assertTrue(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT));
-        assertFalse(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT));
+    public void terminalOutputModeUsesPageKeysForAlternateBufferTouchDrag() {
+        assertTrue(TerminalView.shouldUsePageKeysForAlternateBufferTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT));
+        assertFalse(TerminalView.shouldUsePageKeysForAlternateBufferTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT));
     }
 }

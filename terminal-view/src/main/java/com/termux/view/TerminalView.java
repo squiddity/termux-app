@@ -574,12 +574,8 @@ public final class TerminalView extends View {
         return TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(terminalDragMode);
     }
 
-    static boolean shouldUseTranscriptForTouchDrag(String terminalDragMode) {
+    static boolean shouldUsePageKeysForAlternateBufferTouchDrag(String terminalDragMode) {
         return isTerminalOutputDragMode(terminalDragMode);
-    }
-
-    boolean isTouchDragRoutedToTerminalOutput() {
-        return isTerminalOutputDragMode(mClient.getTerminalDragMode());
     }
 
     void scrollTranscriptRows(boolean up) {
@@ -589,15 +585,7 @@ public final class TerminalView extends View {
 
     /** Perform a touch drag or fling scroll using the configured touch drag target. */
     void doTouchScroll(MotionEvent event, int rowsDown) {
-        if (shouldUseTranscriptForTouchDrag(mClient.getTerminalDragMode())) {
-            // Agent-friendly mode is intentionally not app-aware for touch drag: never turn a
-            // finger drag into DPAD_UP/DPAD_DOWN history navigation or mouse-wheel events. Apps
-            // that want their own scrolling can still use keyboard controls such as PGUP/PGDN.
-            scrollTranscriptRows(rowsDown);
-            return;
-        }
-
-        doScroll(event, rowsDown);
+        doScroll(event, rowsDown, shouldUsePageKeysForAlternateBufferTouchDrag(mClient.getTerminalDragMode()));
     }
 
     void scrollTranscriptRows(int rowsDown) {
@@ -608,15 +596,24 @@ public final class TerminalView extends View {
 
     /** Perform the existing app-aware scroll route, used by physical mouse wheels and default touch drags. */
     void doScroll(MotionEvent event, int rowsDown) {
+        doScroll(event, rowsDown, false);
+    }
+
+    /** Perform an app-aware scroll, optionally replacing alternate-buffer arrow fallback with page keys. */
+    void doScroll(MotionEvent event, int rowsDown, boolean pageKeysForAlternateBuffer) {
         boolean up = rowsDown < 0;
         int amount = Math.abs(rowsDown);
         for (int i = 0; i < amount; i++) {
             if (mEmulator.isMouseTrackingActive()) {
                 sendMouseEventCode(event, up ? TerminalEmulator.MOUSE_WHEELUP_BUTTON : TerminalEmulator.MOUSE_WHEELDOWN_BUTTON, true);
             } else if (mEmulator.isAlternateBufferActive()) {
-                // Send up and down key events for scrolling, which is what some terminals do to make scroll work in
-                // e.g. less, which shifts to the alt screen without mouse handling.
-                handleKeyCode(up ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN, 0);
+                // Upstream maps touch-drag fallback to DPAD_UP/DPAD_DOWN here so apps like less can
+                // scroll without mouse tracking. In terminal-output touch-drag mode, use page keys
+                // instead so Pi-style apps can review output without cycling command history.
+                if (pageKeysForAlternateBuffer)
+                    handleKeyCode(up ? KeyEvent.KEYCODE_PAGE_UP : KeyEvent.KEYCODE_PAGE_DOWN, 0);
+                else
+                    handleKeyCode(up ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN, 0);
             } else {
                 scrollTranscriptRows(up);
             }
