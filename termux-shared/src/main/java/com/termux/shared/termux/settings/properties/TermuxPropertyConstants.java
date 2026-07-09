@@ -10,7 +10,6 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.logger.Logger;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.view.TerminalView;
-import com.termux.view.TerminalViewClient;
 
 import java.io.File;
 import java.util.Arrays;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * Version: v0.19.0
+ * Version: v0.18.0
  * SPDX-License-Identifier: MIT
  *
  * Changelog
@@ -81,9 +80,6 @@ import java.util.Set;
  *
  * - 0.18.0 (2022-06-13)
  *      - Add `KEY_DISABLE_FILE_SHARE_RECEIVER` and `KEY_DISABLE_FILE_VIEW_RECEIVER`.
- *
- * - 0.19.0 (2026-07-08)
- *      - Add `KEY_TERMINAL_INPUT_MODE`.
  */
 
 /**
@@ -356,22 +352,6 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Defines the key for terminal input mode selection. */
-    public static final String KEY_TERMINAL_INPUT_MODE =  "terminal-input-mode"; // Default: "terminal-input-mode"
-
-    public static final String IVALUE_TERMINAL_INPUT_MODE_CURRENT = TerminalViewClient.TERMINAL_INPUT_MODE_CURRENT;
-    public static final String IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD = TerminalViewClient.TERMINAL_INPUT_MODE_DIRECT_GBOARD;
-    public static final String DEFAULT_IVALUE_TERMINAL_INPUT_MODE = IVALUE_TERMINAL_INPUT_MODE_CURRENT;
-
-    /** Defines the bidirectional map for terminal input mode values and their internal values */
-    public static final ImmutableBiMap<String, String> MAP_TERMINAL_INPUT_MODE =
-        new ImmutableBiMap.Builder<String, String>()
-            .put(IVALUE_TERMINAL_INPUT_MODE_CURRENT, IVALUE_TERMINAL_INPUT_MODE_CURRENT)
-            .put(IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD, IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD)
-            .build();
-
-
-
     /** Defines the key for whether toggle soft keyboard request will show/hide or enable/disable keyboard */
     public static final String KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
 
@@ -449,7 +429,6 @@ public final class TermuxPropertyConstants {
         KEY_EXTRA_KEYS,
         KEY_EXTRA_KEYS_STYLE,
         KEY_NIGHT_MODE,
-        KEY_TERMINAL_INPUT_MODE,
         KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR,
         KEY_VOLUME_KEYS_BEHAVIOUR
     ));

@@ -30,11 +30,6 @@ public class TermuxTerminalViewClientBase implements TerminalViewClient {
     }
 
     @Override
-    public String getTerminalInputMode() {
-        return TerminalViewClient.TERMINAL_INPUT_MODE_CURRENT;
-    }
-
-    @Override
     public String getTerminalDragMode() {
         return TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT;
     }

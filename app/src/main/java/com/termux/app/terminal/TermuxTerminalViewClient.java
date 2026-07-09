@@ -13,7 +13,6 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -44,7 +43,6 @@ import com.termux.shared.view.ViewUtils;
 import com.termux.terminal.KeyHandler;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
-import com.termux.view.TerminalView;
 import com.termux.view.TerminalViewClient;
 
 import java.util.ArrayList;
@@ -73,8 +71,6 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     private boolean mTerminalCursorBlinkerStateAlreadySet;
 
     private List<KeyboardShortcut> mSessionShortcuts;
-
-    private String mTerminalInputMode;
 
     private static final String LOG_TAG = "TermuxTerminalViewClient";
 
@@ -143,7 +139,6 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      */
     public void onReloadProperties() {
         setSessionShortcuts();
-        mTerminalInputMode = mActivity.getProperties().getTerminalInputMode();
     }
 
     /**
@@ -220,11 +215,6 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
     @Override
     public boolean shouldEnforceCharBasedInput() {
         return mActivity.getProperties().isEnforcingCharBasedInput();
-    }
-
-    @Override
-    public String getTerminalInputMode() {
-        return mTerminalInputMode != null ? mTerminalInputMode : mActivity.getProperties().getTerminalInputMode();
     }
 
     @Override
@@ -545,47 +535,6 @@ public class TermuxTerminalViewClient extends TermuxTerminalViewClientBase {
      * Called when user requests the soft keyboard to be toggled via "KEYBOARD" toggle button in
      * drawer or extra keys, or with ctrl+alt+k hardware keyboard shortcut.
      */
-    public void onCycleSoftKeyboardModeRequest() {
-        TerminalView terminalView = mActivity.getTerminalView();
-        boolean keyboardVisible = KeyboardUtils.isSoftKeyboardVisible(mActivity);
-
-        if (!keyboardVisible) {
-            mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_CURRENT;
-            KeyboardUtils.clearDisableSoftKeyboardFlags(mActivity);
-            restartTerminalInput(terminalView);
-            if (terminalView != null) KeyboardUtils.showSoftKeyboard(mActivity, terminalView);
-            Logger.showToast(mActivity, getTerminalInputModeLabel(), false);
-            return;
-        }
-
-        if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode())) {
-            if (terminalView != null) KeyboardUtils.hideSoftKeyboard(mActivity, terminalView);
-            Logger.showToast(mActivity, mActivity.getString(R.string.msg_terminal_input_mode_hidden), false);
-            return;
-        }
-
-        mTerminalInputMode = TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD;
-        KeyboardUtils.clearDisableSoftKeyboardFlags(mActivity);
-        restartTerminalInput(terminalView);
-        if (terminalView != null) KeyboardUtils.showSoftKeyboard(mActivity, terminalView);
-        Logger.showToast(mActivity, getTerminalInputModeLabel(), false);
-    }
-
-    private void restartTerminalInput(TerminalView terminalView) {
-        if (terminalView == null) return;
-
-        terminalView.requestFocus();
-        InputMethodManager inputMethodManager = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (inputMethodManager != null)
-            inputMethodManager.restartInput(terminalView);
-    }
-
-    public String getTerminalInputModeLabel() {
-        if (TermuxPropertyConstants.IVALUE_TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(getTerminalInputMode()))
-            return mActivity.getString(R.string.msg_terminal_input_mode_direct_gboard);
-        return mActivity.getString(R.string.msg_terminal_input_mode_current);
-    }
-
     public void onToggleSoftKeyboardRequest() {
         // If soft keyboard toggle behaviour is enable/disabled
         if (mActivity.getProperties().shouldEnableDisableSoftKeyboardOnToggle()) {

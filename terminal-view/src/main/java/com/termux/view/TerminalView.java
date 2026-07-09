@@ -303,35 +303,6 @@ public final class TerminalView extends View {
         return true;
     }
 
-    static int getTerminalSelectedInputType(String terminalInputMode, boolean enforceCharBasedInput) {
-        if (TerminalViewClient.TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(terminalInputMode)) {
-            // Text-like profile for the experimental Gboard-first path. Do not set TYPE_NULL,
-            // TYPE_TEXT_FLAG_NO_SUGGESTIONS, or a password variation, since those suppress the
-            // suggestions/swipe behavior this mode is intended to validate.
-            return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
-        }
-
-        if (enforceCharBasedInput) {
-            // Some keyboards seems do not reset the internal state on TYPE_NULL.
-            // Affects mostly Samsung stock keyboards.
-            // https://github.com/termux/termux-app/issues/686
-            // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
-            // not set and it logs a warning:
-            // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
-            // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
-            return InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-        }
-
-        // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
-        //
-        // Previous keyboard issues:
-        // https://github.com/termux/termux-packages/issues/25
-        // https://github.com/termux/termux-app/issues/87.
-        // https://github.com/termux/termux-app/issues/126.
-        // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
-        return InputType.TYPE_NULL;
-    }
-
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         // Ensure that inputType is only set if TerminalView is selected view with the keyboard and
@@ -339,7 +310,25 @@ public final class TerminalView extends View {
         // initially started with the alternate view or if activity is returned to from another app
         // and the alternate view was the one selected the last time.
         if (mClient.isTerminalViewSelected()) {
-            outAttrs.inputType = getTerminalSelectedInputType(mClient.getTerminalInputMode(), mClient.shouldEnforceCharBasedInput());
+            if (mClient.shouldEnforceCharBasedInput()) {
+                // Some keyboards seems do not reset the internal state on TYPE_NULL.
+                // Affects mostly Samsung stock keyboards.
+                // https://github.com/termux/termux-app/issues/686
+                // However, this is not a valid value as per AOSP since `InputType.TYPE_CLASS_*` is
+                // not set and it logs a warning:
+                // W/InputAttributes: Unexpected input class: inputType=0x00080090 imeOptions=0x02000000
+                // https://cs.android.com/android/platform/superproject/+/android-11.0.0_r40:packages/inputmethods/LatinIME/java/src/com/android/inputmethod/latin/InputAttributes.java;l=79
+                outAttrs.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+            } else {
+                // Using InputType.NULL is the most correct input type and avoids issues with other hacks.
+                //
+                // Previous keyboard issues:
+                // https://github.com/termux/termux-packages/issues/25
+                // https://github.com/termux/termux-app/issues/87.
+                // https://github.com/termux/termux-app/issues/126.
+                // https://github.com/termux/termux-app/issues/137 (japanese chars and TYPE_NULL).
+                outAttrs.inputType = InputType.TYPE_NULL;
+            }
         } else {
             // Corresponds to android:inputType="text"
             outAttrs.inputType =  InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_NORMAL;
@@ -355,12 +344,6 @@ public final class TerminalView extends View {
             public boolean finishComposingText() {
                 if (TERMINAL_VIEW_KEY_LOGGING_ENABLED) mClient.logInfo(LOG_TAG, "IME: finishComposingText()");
                 super.finishComposingText();
-
-                // In direct Gboard mode, composing text is an IME-side preview of the word or
-                // correction being built. Wait for commitText() to send the finalized text so a
-                // swipe suggestion is not sent once on finish and again on commit.
-                if (TerminalViewClient.TERMINAL_INPUT_MODE_DIRECT_GBOARD.equals(mClient.getTerminalInputMode()))
-                    return true;
 
                 sendTextToTerminal(getEditable());
                 getEditable().clear();

@@ -86,9 +86,6 @@
 
     <string name="action_reset_terminal">Reset</string>
     <string name="msg_terminal_reset">Terminal reset</string>
-    <string name="msg_terminal_input_mode_hidden">Terminal input: keyboard hidden</string>
-    <string name="msg_terminal_input_mode_current">Terminal input: current-safe</string>
-    <string name="msg_terminal_input_mode_direct_gboard">Terminal input: direct Gboard (experimental)</string>
 
     <string name="action_kill_process">Kill process (%d)</string>
     <string name="title_confirm_kill_process">Really kill this session?</string>
@@ -202,7 +199,7 @@
                 <!-- Terminal Output Touch Drag -->
                 <string name="termux_terminal_output_touch_drag_title">Drag Reviews Terminal Output</string>
                 <string name="termux_terminal_output_touch_drag_off">Touch drag will use default terminal app behavior. (Default)</string>
-                <string name="termux_terminal_output_touch_drag_on">Touch drag will review terminal scrollback when mouse tracking is not active.</string>
+                <string name="termux_terminal_output_touch_drag_on">Touch drag will review terminal scrollback instead of sending app-level scroll input.</string>
 
 
         <!-- Terminal View Preferences -->

@@ -16,9 +16,6 @@ import com.termux.terminal.TerminalSession;
  */
 public interface TerminalViewClient {
 
-    String TERMINAL_INPUT_MODE_CURRENT = "current";
-    String TERMINAL_INPUT_MODE_DIRECT_GBOARD = "direct-gboard";
-
     String TERMINAL_DRAG_MODE_DEFAULT = "default";
     String TERMINAL_DRAG_MODE_TERMINAL_OUTPUT = "terminal-output";
 
@@ -37,8 +34,6 @@ public interface TerminalViewClient {
     boolean shouldBackButtonBeMappedToEscape();
 
     boolean shouldEnforceCharBasedInput();
-
-    String getTerminalInputMode();
 
     String getTerminalDragMode();
 

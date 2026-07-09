@@ -15,19 +15,7 @@ Quick how-to about Termux package management is available at [Package Management
 
 ## Experimental agent-friendly terminal controls
 
-Termux can opt into experimental terminal interaction modes from `termux.properties`, custom extra keys, and Settings:
-
-```properties
-# Defaults preserve current behavior.
-terminal-input-mode = current
-
-# Existing KEYBOARD extra key cycles hidden/current/direct input states.
-extra-keys = [['ESC','TAB','CTRL','ALT','KEYBOARD']]
-```
-
-`terminal-input-mode = direct-gboard` enables a Gboard-first direct terminal input profile intended to allow suggestions, autocomplete, and swipe typing in the live terminal. It is experimental and not a broad compatibility claim for every keyboard. Use the existing `KEYBOARD` extra key to cycle between hidden keyboard, current terminal-safe input, and direct Gboard input without restarting Termux.
-
-The **Drag Reviews Terminal Output** setting keeps explicit mouse-tracking app scrolling intact, but replaces Termux's fallback drag-as-arrow-keys behavior with transcript scrollback movement for shell and agent sessions. Alternate-screen apps may not expose saved scrollback; turn the setting off to restore default drag behavior when needed.
+The **Drag Reviews Terminal Output** setting replaces Termux's fallback touch-drag-as-app-input behavior with transcript scrollback movement for shell and agent sessions. Turn the setting off to restore default drag behavior when needed.
 
 **We are looking for Termux Android application maintainers.**
 

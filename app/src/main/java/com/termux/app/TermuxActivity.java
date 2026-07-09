@@ -584,7 +584,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
     private void setToggleKeyboardView() {
         findViewById(R.id.toggle_keyboard_button).setOnClickListener(v -> {
-            mTermuxTerminalViewClient.onCycleSoftKeyboardModeRequest();
+            mTermuxTerminalViewClient.onToggleSoftKeyboardRequest();
             getDrawer().closeDrawers();
         });
 
