@@ -14,9 +14,8 @@ public class TerminalViewScrollModeTest {
     }
 
     @Test
-    public void terminalOutputModeOnlyReplacesFallbackDragBehavior() {
-        assertTrue(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT, false));
-        assertFalse(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT, true));
-        assertFalse(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT, false));
+    public void terminalOutputModeAlwaysReplacesTouchDragWithTranscriptScroll() {
+        assertTrue(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT));
+        assertFalse(TerminalView.shouldUseTranscriptForTouchDrag(TerminalViewClient.TERMINAL_DRAG_MODE_DEFAULT));
     }
 }

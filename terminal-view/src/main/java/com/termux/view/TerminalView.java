@@ -591,8 +591,8 @@ public final class TerminalView extends View {
         return TerminalViewClient.TERMINAL_DRAG_MODE_TERMINAL_OUTPUT.equals(terminalDragMode);
     }
 
-    static boolean shouldUseTranscriptForTouchDrag(String terminalDragMode, boolean mouseTrackingActive) {
-        return isTerminalOutputDragMode(terminalDragMode) && !mouseTrackingActive;
+    static boolean shouldUseTranscriptForTouchDrag(String terminalDragMode) {
+        return isTerminalOutputDragMode(terminalDragMode);
     }
 
     boolean isTouchDragRoutedToTerminalOutput() {
@@ -606,14 +606,11 @@ public final class TerminalView extends View {
 
     /** Perform a touch drag or fling scroll using the configured touch drag target. */
     void doTouchScroll(MotionEvent event, int rowsDown) {
-        if (isTouchDragRoutedToTerminalOutput()) {
-            // Do not interfere with terminal apps that explicitly request mouse tracking (for
-            // example `less` with mouse support). Only replace Termux's fallback DPAD/app-key path
-            // with transcript movement so drag review does not cycle shell/Pi command history.
-            if (shouldUseTranscriptForTouchDrag(mClient.getTerminalDragMode(), mEmulator.isMouseTrackingActive()))
-                scrollTranscriptRows(rowsDown);
-            else
-                doScroll(event, rowsDown);
+        if (shouldUseTranscriptForTouchDrag(mClient.getTerminalDragMode())) {
+            // Agent-friendly mode is intentionally not app-aware for touch drag: never turn a
+            // finger drag into DPAD_UP/DPAD_DOWN history navigation or mouse-wheel events. Apps
+            // that want their own scrolling can still use keyboard controls such as PGUP/PGDN.
+            scrollTranscriptRows(rowsDown);
             return;
         }
 
